@@ -105,7 +105,8 @@ class Project(models.Model):
     def save(self, *args, **kwargs):
         if not self.project_code:
             from django.db import transaction
-            year = self.created_at.year if self.created_at else __import__('django.utils.timezone', fromlist=['timezone']).timezone.now().year
+            from django.utils import timezone
+            year = self.created_at.year if self.created_at else timezone.now().year
             with transaction.atomic():
                 count = Project.objects.filter(project_code__startswith=f'UDOM-{year}-').count() + 1
                 self.project_code = f'UDOM-{year}-{count:04d}'
