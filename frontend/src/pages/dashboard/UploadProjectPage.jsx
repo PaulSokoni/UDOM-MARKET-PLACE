@@ -72,15 +72,17 @@ export default function UploadProjectPage() {
       toast.success('Project submitted for review!');
       navigate('/dashboard/projects');
     } catch (err) {
+      console.error('Upload error:', err.response?.data);
       const errs = err.response?.data;
       if (errs && typeof errs === 'object' && !Array.isArray(errs)) {
-        const firstVal = Object.values(errs).flat()[0];
-        const msg = typeof firstVal === 'string' ? firstVal : JSON.stringify(firstVal);
-        toast.error(msg || 'Upload failed');
+        const messages = Object.entries(errs).map(([k, v]) =>
+          `${k}: ${Array.isArray(v) ? v.join(', ') : v}`
+        );
+        toast.error(messages[0] || 'Upload failed', { duration: 6000 });
       } else if (typeof errs === 'string') {
-        toast.error(errs.slice(0, 200));
+        toast.error(errs.slice(0, 300));
       } else {
-        toast.error('Upload failed');
+        toast.error(`Upload failed (${err.response?.status || 'network error'})`);
       }
     } finally { setLoading(false); }
   };

@@ -1,3 +1,4 @@
+import json
 from rest_framework import serializers
 from django.utils.text import slugify
 from .models import Category, Project, ProjectScreenshot, Bookmark, Download, ProjectSubscription
@@ -188,9 +189,16 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             'year', 'version', 'supervisor',
         ]
 
+    def validate_technologies(self, value):
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except (json.JSONDecodeError, ValueError):
+                value = [t.strip() for t in value.split(',') if t.strip()]
+        return value if isinstance(value, list) else []
+
     def validate_title(self, value):
         qs = Project.objects.filter(title__iexact=value)
-        # On update, exclude the current instance
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():
