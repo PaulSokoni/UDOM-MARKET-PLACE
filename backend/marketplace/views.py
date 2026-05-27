@@ -19,6 +19,7 @@ class CategoryListView(generics.ListCreateAPIView):
     queryset = Category.objects.filter(parent=None)
     serializer_class = CategorySerializer
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     def get_permissions(self):
         if self.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
@@ -64,7 +65,10 @@ class ProjectCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         project = serializer.save(status=Project.Status.PENDING_REVIEW)
-        self._send_upload_notifications(project)
+        try:
+            self._send_upload_notifications(project)
+        except Exception:
+            pass
 
     def _send_upload_notifications(self, project):
         from notifications.models import Notification
